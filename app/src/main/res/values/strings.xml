@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">photo_binder</string>
+    <string name="This_push">ここを押して</string>
+    <string name="hello">こんにちは</string>
+    <string name="add">追加する</string>>
+</resources>
