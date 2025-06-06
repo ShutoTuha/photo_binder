@@ -7,8 +7,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.Button;
+// import android.widget.LinearLayout; // LinearLayout は不要になるのでコメントアウトまたは削除
+import android.widget.GridLayout; // GridLayout をインポート
 import android.widget.ImageView;
-import android.widget.LinearLayout; // LinearLayout をインポート
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -26,11 +27,11 @@ import java.util.List;
 public class photo_area extends AppCompatActivity {
 
     private static final String TAG = "PhotoAreaActivity";
-    // private Uri selectedImageUri; // 単一選択用は imageUris リストで代替するのでコメントアウトまたは削除も検討
-    // private ImageView selectedImageView; // 単一表示用も image_container_layout で代替
+    // private Uri selectedImageUri;
+    // private ImageView selectedImageView;
 
-    private final List<Uri> imageUris = new ArrayList<>(); // 選択された全ての画像のURIを保持するリスト
-    private LinearLayout imageContainerLayout; // 画像を表示するLinearLayout
+    private final List<Uri> imageUris = new ArrayList<>();
+    private GridLayout imageContainerLayout; // LinearLayout から GridLayout に変更
 
     private final ActivityResultLauncher<Intent> openImageLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -40,27 +41,25 @@ public class photo_area extends AppCompatActivity {
                             if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                                 Intent data = result.getData();
                                 if (data.getClipData() != null) {
-                                    // マルチ選択の場合
                                     int count = data.getClipData().getItemCount();
                                     for (int i = 0; i < count; i++) {
                                         Uri imageUri = data.getClipData().getItemAt(i).getUri();
                                         if (imageUri != null) {
-                                            imageUris.add(imageUri); // リストに追加
+                                            imageUris.add(imageUri);
                                             Log.d(TAG, "追加された画像のURI: " + imageUri.toString());
                                         }
                                     }
                                 } else if (data.getData() != null) {
-                                    // シングル選択の場合
                                     Uri imageUri = data.getData();
                                     if (imageUri != null) {
-                                        imageUris.add(imageUri); // リストに追加
+                                        imageUris.add(imageUri);
                                         Log.d(TAG, "追加された画像のURI: " + imageUri.toString());
                                     }
                                 }
 
                                 if (!imageUris.isEmpty()) {
                                     Toast.makeText(photo_area.this, imageUris.size() + "枚の画像が選択されました", Toast.LENGTH_LONG).show();
-                                    displayImages(); // 選択された画像を表示するメソッドを呼び出し
+                                    displayImages();
                                 } else {
                                     Log.e(TAG, "有効な画像URIが取得できませんでした。");
                                     Toast.makeText(photo_area.this, "画像URIの取得に失敗しました。", Toast.LENGTH_SHORT).show();
@@ -78,9 +77,9 @@ public class photo_area extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_area);
 
-        imageContainerLayout = findViewById(R.id.image_container_layout); // LinearLayout を取得
-
-        // selectedImageView = findViewById(R.id.your_image_view_id); // もし単一のImageViewも使うなら
+        imageContainerLayout = findViewById(R.id.image_container_layout); // GridLayout を取得
+        // GridLayout の列数を設定 (XMLでも設定可能ですが、コードからも設定できます)
+        // imageContainerLayout.setColumnCount(3); // XMLで設定する場合は不要
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -92,7 +91,7 @@ public class photo_area extends AppCompatActivity {
         comebutton.setOnClickListener(v -> {
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
-            finish(); // 戻るボタンでこの画面を終了させる場合
+            finish();
         });
 
         Button addbutton = findViewById(R.id.addbutton);
@@ -100,7 +99,6 @@ public class photo_area extends AppCompatActivity {
             openImagePicker();
         });
 
-        // 既に選択済みの画像があれば表示（例：画面回転時など）
         if (!imageUris.isEmpty()) {
             displayImages();
         }
@@ -109,33 +107,41 @@ public class photo_area extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("image/*");
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true); // 複数選択を許可
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         openImageLauncher.launch(intent);
     }
 
     private void displayImages() {
         if (imageContainerLayout == null) return;
 
-        imageContainerLayout.removeAllViews(); // 既存のビューをクリア（再表示のため）
+        imageContainerLayout.removeAllViews();
+
+        // 画面の幅を取得 (マージンやパディングを考慮)
+        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        int spacingInPixels = 16; // 画像間のスペース（dpからpxに変換する必要がある場合は別途対応）
+        int columnCount = imageContainerLayout.getColumnCount(); // GridLayoutの列数を取得
+        // 1列あたりの幅を計算 (パディングやマージンを考慮)
+        // ここでは GridLayout のパディングも考慮に入れるとより正確になります。
+        // 簡単のため、ここでは GridLayout の左右パディングは無いものとして計算します。
+        int imageWidth = (screenWidth - (spacingInPixels * (columnCount - 1))) / columnCount;
+
 
         for (Uri imageUri : imageUris) {
             ImageView imageView = new ImageView(this);
-            // ImageViewのレイアウトパラメータを設定 (例: 幅は親に合わせ、高さはコンテンツに合わせる)
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            );
-            layoutParams.setMargins(0, 0, 0, 16); // マージン（画像間のスペース）
+
+            // GridLayout.LayoutParams を使用
+            GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
+            layoutParams.width = imageWidth; // 計算した幅を設定
+            layoutParams.height = imageWidth; // 高さを幅と同じにして正方形に近づける (お好みで調整)
+            // マージンを設定 (右と下にマージンを設定してスペースを作る)
+            layoutParams.setMargins(0, 0, spacingInPixels, spacingInPixels);
             imageView.setLayoutParams(layoutParams);
 
-            imageView.setImageURI(imageUri); // 画像をセット
-            imageView.setAdjustViewBounds(true); // 画像のアスペクト比を保つ
-            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER); // スケールタイプ
+            imageView.setImageURI(imageUri);
+            imageView.setAdjustViewBounds(true);
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP); // CENTER_CROP でセルを埋めるように調整
 
-            imageContainerLayout.addView(imageView); // LinearLayout に ImageView を追加
+            imageContainerLayout.addView(imageView);
         }
     }
-
-    // (オプション) 永続的なパーミッションが必要な場合
-    // ... (既存のコメント部分はそのまま)
 }

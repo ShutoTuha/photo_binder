@@ -7,55 +7,44 @@
     android:layout_height="match_parent"
     tools:context=".photo_area">
 
-
+    <!-- 他のビュー (Buttonなど) はそのまま -->
     <Button
         android:id="@+id/comebutton"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/This_push"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="戻る"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"/>
 
     <Button
         android:id="@+id/addbutton"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/add"
-        app:layout_constraintTop_toTopOf="@+id/comebutton"
+        android:text="追加"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"/>
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/comebutton"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        />
+        android:layout_marginTop="16dp">
 
-<!--    <ImageView-->
-<!--        android:id="@+id/your_image_view_id"-->
-<!--        android:layout_width="200dp"-->
-<!--        android:layout_height="200dp"-->
-<!--        android:layout_marginTop="32dp"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/addbutton"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        android:contentDescription="@null"-->
-<!--        tools:srcCompat="@tools:sample/avatars"-->
-<!--        />-->
-
-    <ScrollView
-        android:id="@+id/image_scroll_view"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/addbutton"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-        <LinearLayout
+        <GridLayout
             android:id="@+id/image_container_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="8dp" />
-</ScrollView>
+            android:columnCount="3"
+            android:padding="8dp"
+            android:useDefaultMargins="false" />  <!-- useDefaultMargins は false にして手動でマージンを設定するか、trueにしてGridLayoutのデフォルトマージンを利用するか選択 -->
+
+    </ScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
